@@ -37,7 +37,7 @@ Here, we fit the Linear Regression parameters to our dataset using Gradient Desc
     <img src="https://github.com/AdroitAnandAI/ML-Algorithms-in-MATLAB/blob/master/1.%20Linear%20Regression/images/2.2.1.PNG">
 </p>
 
-Lets perform gradient descent to minimize the cost function, it is helpful to monitor the convergence by computing the cost.
+**Lets perform gradient descent to minimize the cost function, it is helpful to monitor the convergence by computing the cost.**
 
 ```matlab
 function J = computeCost(X, y, theta)
