@@ -106,3 +106,22 @@ end
 <p align="center">
     <img src="https://github.com/AdroitAnandAI/ML-Algorithms-in-MATLAB/blob/master/1.%20Linear%20Regression/images/2.2.4.PNG">
 </p>
+
+### Visualizing Cost Function ###
+
+To understand the cost function better, we will now plot the cost over a 2-dimensional grid.
+
+```matlab
+% initialize J vals to a matrix of 0's
+J vals = zeros(length(theta0 vals), length(theta1 vals));
+% Fill out J vals
+for i = 1:length(theta0 vals)
+for j = 1:length(theta1 vals)
+t = [theta0 vals(i); theta1 vals(j)];
+J vals(i,j) = computeCost(x, y, t);
+end
+end
+```
+<p align="center">
+    <img src="https://github.com/AdroitAnandAI/ML-Algorithms-in-MATLAB/blob/master/1.%20Linear%20Regression/images/2.4.PNG">
+</p>
