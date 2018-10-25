@@ -156,7 +156,25 @@ end
     <img src="https://github.com/AdroitAnandAI/ML-Algorithms-in-MATLAB/blob/master/2.%20Logistic%20Regression/images/1.2.1.PNG">
 </p>
 
+```matlab
+function g = sigmoid(z)
+%SIGMOID Compute sigmoid function
+%   g = SIGMOID(z) computes the sigmoid of z.
+
+g = zeros(size(z));
+
+dim = size(z);
+
+for i=1:dim(1)
+    for j=1:dim(2)
+        g(i,j) = 1/(1+exp(-z(i,j)));
+    end;
+end;
+end
+```
+
 ### Cost function and gradient
+
 <p>
     <img src="https://github.com/AdroitAnandAI/ML-Algorithms-in-MATLAB/blob/master/2.%20Logistic%20Regression/images/1.2.2.1.PNG">
 </p>
