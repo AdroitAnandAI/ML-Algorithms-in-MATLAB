@@ -16,17 +16,6 @@ function plotData(x, y)
 
 figure; % open a new figure window
 
-%               Plot the training data into a figure using the 
-%               "figure" and "plot" commands. Set the axes labels using
-%               the "xlabel" and "ylabel" commands. Assume the 
-%               population and revenue data have been passed in
-%               as the x and y arguments of this function.
-%
-%   can use the 'rx' option with plot to have the markers
-%       appear as red crosses. Furthermore, you can make the
-%       markers larger by using plot(..., 'rx', 'MarkerSize', 10);
-
-
 data = load('ex1data1.txt'); % read comma separated data
 x = data(:, 1); y = data(:, 2);
 m = length(y);
@@ -80,10 +69,6 @@ for iter = 1:num_iters
 
     %  Perform a single gradient step on the parameter vector
     %               theta. 
-    %
-    %  While debugging, it can be useful to print out the values
-    %       of the cost function (computeCost) and gradient here.
-    %
 
     %%This is non vectorized implementation of gradient descent
 %     a = theta(1) - X(:,1)'*(X*theta- y)*(alpha/m);
@@ -92,8 +77,11 @@ for iter = 1:num_iters
 %     theta(2) = b;
     
     %%This is vectorized implementation of gradient descent
-    theta = theta - X'*(X*theta- y)*(alpha/m);
+```
+
+>  ` `**` theta = theta - X'*(X*theta- y)*(alpha/m); `**` `
     
+```matlab
     % Save the cost J in every iteration    
     J_history(iter) = computeCost(X, y, theta);
     %%fprintf('With theta = [0 ; 0]\nCost computed = %f\n', J_history(iter));
