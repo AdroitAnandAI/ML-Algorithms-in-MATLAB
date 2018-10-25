@@ -212,3 +212,83 @@ end
     <img src="https://github.com/AdroitAnandAI/ML-Algorithms-in-MATLAB/blob/master/2.%20Logistic%20Regression/images/1.2.4.PNG">
 </p>
 
+## Regularized logistic regression ##
+
+Lets implement regularized logistic regression to predict whether microchips from a fabrication plant passes quality assurance (QA). During QA, each microchip goes through various tests to ensure it is functioning correctly. The product manager of the factory has the
+test results for some microchips on two different tests. From these two tests, we would like to determine whether the microchips should be accepted or rejected. To make the decision, we have a dataset of test results on past microchips, from which we can build a logistic regression model.
+
+### Visualizing the data ###
+
+```matlab
+function plotData(X, y)
+%PLOTDATA Plots the data points X and y into a new figure 
+%   PLOTDATA(x,y) plots the data points with + for the positive examples
+%   and o for the negative examples. X is assumed to be a Mx2 matrix.
+
+% Create New Figure
+figure; hold on;
+
+% Find Indices of Positive and Negative Examples
+pos = find(y==1); neg = find(y == 0);
+% Plot Examples
+plot(X(pos, 1), X(pos, 2), 'k+','LineWidth', 2, ...'MarkerSize', 7);
+plot(X(neg, 1), X(neg, 2), 'ko', 'MarkerFaceColor', 'y', ...'MarkerSize', 7);
+
+hold off;
+
+end
+```
+
+**Plot of training data**
+<p align="center">
+    <img src="https://github.com/AdroitAnandAI/ML-Algorithms-in-MATLAB/blob/master/2.%20Logistic%20Regression/images/2.1.PNG">
+</p>
+the plot shows that our dataset cannot be separated into positive and negative examples by a straight-line through the plot. Therefore, a straightforward application of logistic regression will not perform well on this dataset since logistic regression will only be able to find a linear decision boundary.
+
+### Feature mapping ###
+
+One way to fit the data better is to create more features from each data point. In our code, we will map the features into all polynomial terms of x1 and x2 up to the sixth power.
+
+<p align="center">
+    <img src="https://github.com/AdroitAnandAI/ML-Algorithms-in-MATLAB/blob/master/2.%20Logistic%20Regression/images/2.2.PNG">
+</p>
+
+As a result of this mapping, our vector of two features (the scores on two QA tests) has been transformed into a 28-dimensional vector. A logistic regression classifier trained on this higher-dimension feature vector will have a more complex decision boundary and will appear nonlinear when drawn in our 2-dimensional plot.
+
+While the feature mapping allows us to build a more expressive classifier, it also more susceptible to overfitting. We will implement regularized logistic regression to fit the data and also see how regularization can help combat the overfitting problem.
+
+### Cost function and gradient ###
+
+**regularized cost function in logistic regression**
+<p align="center">
+    <img src="https://github.com/AdroitAnandAI/ML-Algorithms-in-MATLAB/blob/master/2.%20Logistic%20Regression/images/2.3.1.PNG">
+</p>
+<p align="center">
+    <img src="https://github.com/AdroitAnandAI/ML-Algorithms-in-MATLAB/blob/master/2.%20Logistic%20Regression/images/2.3.2.PNG">
+</p>
+<p align="center">
+    <img src="https://github.com/AdroitAnandAI/ML-Algorithms-in-MATLAB/blob/master/2.%20Logistic%20Regression/images/2.3.3.PNG">
+</p>
+
+```matlab
+function [J, grad] = costFunctionReg(theta, X, y, lambda)
+%COSTFUNCTIONREG Compute cost and gradient for logistic regression with regularization
+%   J = COSTFUNCTIONREG(theta, X, y, lambda) computes the cost of using
+%   theta as the parameter for regularized logistic regression and the
+%   gradient of the cost w.r.t. to the parameters. 
+
+% Initialize some useful values
+m = length(y); % number of training examples
+
+J = 0;
+grad = zeros(size(theta));
+
+J = -sum((y.*log(sigmoid(X*theta))+(1-y).*log(1-sigmoid(X*theta))))/m + (sum(theta.^2) - theta(1)^2)*lambda/(2*m);
+
+reg_param = theta*(lambda/m);   
+reg_param(1) = 0;
+
+grad = X'*(sigmoid(X*theta) - y)/m + reg_param;
+end
+```
+
