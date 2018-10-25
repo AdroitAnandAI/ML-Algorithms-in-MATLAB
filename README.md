@@ -33,7 +33,9 @@ end
 
 Here, we fit the Linear Regression parameters to our dataset using Gradient Descent.
 
-![2.2.1](https://github.com/AdroitAnandAI/ML-Algorithms-in-MATLAB/blob/master/1.%20Linear%20Regression/images/2.2.1.PNG)
+<p>
+    <img src="https://github.com/AdroitAnandAI/ML-Algorithms-in-MATLAB/blob/master/1.%20Linear%20Regression/images/2.2.1.PNG">
+</p>
 
 Lets perform gradient descent to minimize the cost function, it is helpful to monitor the convergence by computing the cost.
 
