@@ -49,9 +49,10 @@ function J = computeCost(X, y, theta)
 m = length(y); % number of training examples
 
 J = 0;
-
-% Compute the cost of a particular choice of theta and set to J
-J = sum((X*theta- y).^2)/(2*m);
+```
+> ` `**` % Compute the cost of a particular choice of theta and set to J `**` `<br/> 
+> ` `**` J = sum((X*theta- y).^2)/(2*m); `**` `
+```matlab
 end
 ```
 
@@ -83,9 +84,9 @@ for iter = 1:num_iters
 
 >  ` `**` theta = theta - X'*(X*theta- y)*(alpha/m); `**` `
     
+>    ` `**` % Save the cost J in every iteration     `**` ` <br/>
+>    ` `**` J_history(iter) = computeCost(X, y, theta); `**` `
 ```matlab
-    % Save the cost J in every iteration    
-    J_history(iter) = computeCost(X, y, theta);
     %%fprintf('With theta = [0 ; 0]\nCost computed = %f\n', J_history(iter));
 
 end
