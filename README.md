@@ -116,3 +116,99 @@ end
 <p align="center">
     <img src="https://github.com/AdroitAnandAI/ML-Algorithms-in-MATLAB/blob/master/1.%20Linear%20Regression/images/2.4.PNG">
 </p>
+
+# 2. Logistic Regression #
+
+Here, we will build a logistic regression model to predict whether a student gets admitted into a university. Suppose the administrator of a university department wants to determine each applicant's chance of admission based on their results on two exams, we have historical data from previous applicants that can be used as a training set for logistic regression. For each training example, we have the applicant's scores on two exams and the admissions decision.
+
+Our task is to build a classication model that estimates an applicant's probability of admission based the scores from those two exams.
+
+### Visualizing the data
+
+Code to load the data and display it on a 2-dimensional plot:
+
+```matlab
+function plotData(X, y)
+%PLOTDATA Plots the data points X and y into a new figure 
+%   PLOTDATA(x,y) plots the data points with + for the positive examples
+%   and o for the negative examples. X is assumed to be a Mx2 matrix.
+
+% Create New Figure
+figure; hold on;
+
+% Find Indices of Positive and Negative Examples
+pos = find(y==1); neg = find(y == 0);
+% Plot Examples
+plot(X(pos, 1), X(pos, 2), 'k+','LineWidth', 2, ...'MarkerSize', 7);
+plot(X(neg, 1), X(neg, 2), 'ko', 'MarkerFaceColor', 'y', ...'MarkerSize', 7);
+
+hold off;
+
+end
+```
+**Scatter plot of training data**
+<p align="center">
+    <img src="https://github.com/AdroitAnandAI/ML-Algorithms-in-MATLAB/blob/master/2.%20Logistic%20Regression/images/1.1.PNG">
+</p>
+
+### logistic regression hypothesis
+<p>
+    <img src="https://github.com/AdroitAnandAI/ML-Algorithms-in-MATLAB/blob/master/2.%20Logistic%20Regression/images/1.2.1.PNG">
+</p>
+
+### Cost function and gradient
+<p>
+    <img src="https://github.com/AdroitAnandAI/ML-Algorithms-in-MATLAB/blob/master/2.%20Logistic%20Regression/images/1.2.2.1.PNG">
+</p>
+<p>
+    <img src="https://github.com/AdroitAnandAI/ML-Algorithms-in-MATLAB/blob/master/2.%20Logistic%20Regression/images/1.2.2.2.PNG">
+</p>
+
+```matlab
+function [J, grad] = costFunction(theta, X, y)
+%COSTFUNCTION Compute cost and gradient for logistic regression
+%   J = COSTFUNCTION(theta, X, y) computes the cost of using theta as the
+%   parameter for logistic regression and the gradient of the cost
+%   w.r.t. to the parameters.
+
+% Initialize some useful values
+m = length(y); % number of training examples
+
+J = 0;
+grad = zeros(size(theta));
+
+J = -sum((y.*log(sigmoid(X*theta))+(1-y).*log(1-sigmoid(X*theta))))/m;
+
+grad = X'*(sigmoid(X*theta) - y)/m;
+
+end
+
+```
+
+### Evaluating logistic regression
+
+We can use the model to predict whether a particular student will be admitted. For a student with an Exam 1 score of 45 and an Exam 2 score of 85, we should expect to see an admission probability of 0.776.
+ 
+Another way to evaluate the quality of the parameters we have found is to see how well the learned model predicts on our training set. The predict function will produce "1" or "0" predictions given a dataset and a learned parameter vector theta.
+
+```matlab
+function p = predict(theta, X)
+%PREDICT Predict whether the label is 0 or 1 using learned logistic 
+%regression parameters theta
+%   p = PREDICT(theta, X) computes the predictions for X using a 
+%   threshold at 0.5 (i.e., if sigmoid(theta'*x) >= 0.5, predict 1)
+
+m = size(X, 1); % Number of training examples
+
+p = zeros(m, 1);
+
+p = sigmoid(X*theta) >= 0.5;
+
+end
+```
+
+**Training data with decision boundary**
+<p align="center">
+    <img src="https://github.com/AdroitAnandAI/ML-Algorithms-in-MATLAB/blob/master/2.%20Logistic%20Regression/images/1.2.4.PNG">
+</p>
+
