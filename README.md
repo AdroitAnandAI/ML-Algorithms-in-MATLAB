@@ -472,5 +472,34 @@ form more complex hypotheses as it is only a linear classifier. The neural netwo
 Our neural network has 3 layers { an input layer, a hidden layer and an output layer. Recall that our inputs are pixel values of
 digit images. Since the images are of size 20x20, this gives us 400 input layer units (excluding the extra bias unit which always outputs +1). The training data will be loaded into the variables X and y. Theta1 and Theta2 parameters have dimensions that are sized for a neural network with 25 units in the second layer and 10 output units (corresponding to the 10 digit classes).
 
+<p align="center">
+    <img src="https://github.com/AdroitAnandAI/ML-Algorithms-in-MATLAB/blob/master/3.%20Multiclass%20Classification%20and%20Neural%20Nets/images/2.1.PNG">
+</p>
 
+**Feedforward Propagation and Prediction**
+
+```matlab
+function p = predict(Theta1, Theta2, X)
+%PREDICT Predict the label of an input given a trained neural network
+%   p = PREDICT(Theta1, Theta2, X) outputs the predicted label of X given the
+%   trained weights of a neural network (Theta1, Theta2)
+
+% Useful values
+m = size(X, 1);
+num_labels = size(Theta2, 1);
+
+p = zeros(size(X, 1), 1);
+
+X = [ones(size(X, 1), 1) X];
+z2 = X*Theta1';
+a2 = sigmoid(z2);
+
+a2 = [ones(size(a2, 1), 1) a2];
+z3 = a2*Theta2';
+a3 = sigmoid(z3);
+
+[M p] = max(a3, [], 2);
+
+end
+```
 
