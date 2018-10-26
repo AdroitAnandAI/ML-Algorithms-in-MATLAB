@@ -121,7 +121,7 @@ end
 
 Here, we will build a logistic regression model to predict whether a student gets admitted into a university. Suppose the administrator of a university department wants to determine each applicant's chance of admission based on their results on two exams, we have historical data from previous applicants that can be used as a training set for logistic regression. For each training example, we have the applicant's scores on two exams and the admissions decision.
 
-Our task is to build a classication model that estimates an applicant's probability of admission based the scores from those two exams.
+**Our task is to build a classification model that estimates an applicant's probability of admission based the scores from those two exams.**
 
 ### Visualizing the data
 
@@ -151,7 +151,7 @@ end
     <img src="https://github.com/AdroitAnandAI/ML-Algorithms-in-MATLAB/blob/master/2.%20Logistic%20Regression/images/1.1.PNG">
 </p>
 
-### logistic regression hypothesis
+## Logistic Regression Hypothesis
 <p>
     <img src="https://github.com/AdroitAnandAI/ML-Algorithms-in-MATLAB/blob/master/2.%20Logistic%20Regression/images/1.2.1.PNG">
 </p>
@@ -193,14 +193,14 @@ function [J, grad] = costFunction(theta, X, y)
 m = length(y); % number of training examples
 
 J = 0;
-grad = zeros(size(theta));
+```
+>  ` `**`  grad = zeros(size(theta));  `**` ` <br/>
 
-J = -sum((y.*log(sigmoid(X*theta))+(1-y).*log(1-sigmoid(X*theta))))/m;
+>  ` `**`  J = -sum((y.*log(sigmoid(X*theta))+(1-y).*log(1-sigmoid(X*theta))))/m;  `**` ` <br/>
 
-grad = X'*(sigmoid(X*theta) - y)/m;
-
+>  ` `**`  grad = X'*(sigmoid(X*theta) - y)/m;  `**` ` <br/>
+```matlab
 end
-
 ```
 
 ### Evaluating logistic regression
@@ -215,13 +215,13 @@ function p = predict(theta, X)
 %regression parameters theta
 %   p = PREDICT(theta, X) computes the predictions for X using a 
 %   threshold at 0.5 (i.e., if sigmoid(theta'*x) >= 0.5, predict 1)
+```
+>  ` `**`  m = size(X, 1); % Number of training examples  `**` ` <br/>
 
-m = size(X, 1); % Number of training examples
+>  ` `**`  p = zeros(m, 1);  `**` ` <br/>
 
-p = zeros(m, 1);
-
-p = sigmoid(X*theta) >= 0.5;
-
+>  ` `**`  p = sigmoid(X*theta) >= 0.5;  `**` ` <br/>
+```matlab
 end
 ```
 
@@ -232,8 +232,7 @@ end
 
 ## Regularized logistic regression ##
 
-Lets implement regularized logistic regression to predict whether microchips from a fabrication plant passes quality assurance (QA). During QA, each microchip goes through various tests to ensure it is functioning correctly. The product manager of the factory has the
-test results for some microchips on two different tests. From these two tests, we would like to determine whether the microchips should be accepted or rejected. To make the decision, we have a dataset of test results on past microchips, from which we can build a logistic regression model.
+Lets implement regularized logistic regression to predict whether microchips from a fabrication plant passes quality assurance (QA), to ensure it is functioning correctly. To determine whether the microchips should be accepted or rejected, we have a dataset of test results on past microchips, from which we can build a logistic regression model.
 
 ### Visualizing the data ###
 
@@ -257,23 +256,11 @@ hold off;
 end
 ```
 
-**Plot of training data**
+**Plot of Training Data**
 <p align="center">
     <img src="https://github.com/AdroitAnandAI/ML-Algorithms-in-MATLAB/blob/master/2.%20Logistic%20Regression/images/2.1.PNG">
 </p>
-the plot shows that our dataset cannot be separated into positive and negative examples by a straight-line through the plot. Therefore, a straightforward application of logistic regression will not perform well on this dataset since logistic regression will only be able to find a linear decision boundary.
-
-### Feature mapping ###
-
-One way to fit the data better is to create more features from each data point. In our code, we will map the features into all polynomial terms of x1 and x2 up to the sixth power.
-
-<p align="center">
-    <img src="https://github.com/AdroitAnandAI/ML-Algorithms-in-MATLAB/blob/master/2.%20Logistic%20Regression/images/2.2.PNG">
-</p>
-
-As a result of this mapping, our vector of two features (the scores on two QA tests) has been transformed into a 28-dimensional vector. A logistic regression classifier trained on this higher-dimension feature vector will have a more complex decision boundary and will appear nonlinear when drawn in our 2-dimensional plot.
-
-While the feature mapping allows us to build a more expressive classifier, it also more susceptible to overfitting. We will implement regularized logistic regression to fit the data and also see how regularization can help combat the overfitting problem.
+The plot shows that our dataset cannot be separated into positive and negative examples by a straight-line through the plot. Therefore, a straightforward application of logistic regression will not perform well on this dataset since logistic regression will only be able to find a linear decision boundary.
 
 ### Cost function and gradient ###
 
@@ -297,16 +284,17 @@ function [J, grad] = costFunctionReg(theta, X, y, lambda)
 
 % Initialize some useful values
 m = length(y); % number of training examples
+```
+>  ` `**` J = 0;  `**` ` <br/>
+>  ` `**` grad = zeros(size(theta));  `**` ` <br/>
 
-J = 0;
-grad = zeros(size(theta));
+>  ` `**` J = -sum((y.*log(sigmoid(X*theta))+(1-y).*log(1-sigmoid(X*theta))))/m + (sum(theta.^2) - theta(1)^2)*lambda/(2*m);  `**` ` <br/>
 
-J = -sum((y.*log(sigmoid(X*theta))+(1-y).*log(1-sigmoid(X*theta))))/m + (sum(theta.^2) - theta(1)^2)*lambda/(2*m);
+>  ` `**` reg_param = theta*(lambda/m);  `**` ` <br/>
+>  ` `**` reg_param(1) = 0;  `**` ` <br/>
 
-reg_param = theta*(lambda/m);   
-reg_param(1) = 0;
-
-grad = X'*(sigmoid(X*theta) - y)/m + reg_param;
+>  ` `**` grad = X'*(sigmoid(X*theta) - y)/m + reg_param;  `**` ` <br/>
+```matlab
 end
 ```
 
