@@ -317,7 +317,7 @@ The second part of the training set is a 5000-dimensional vector y that contains
 Lets use multiple one-vs-all logistic regression models to build a multi-class classifier. Since there are 10 classes, there is a need to train 10 separate logistic regression classifiers. To make this training efficient, it is important to ensure that our code is well vectorized. Here, we are implementing a vectorized version of logistic regression that does not employ any for loops. 
 <br/>
 
-**Vectorizing the cost function **
+**Vectorizing the cost function**
 
 <p align="center">
     <img src="https://github.com/AdroitAnandAI/ML-Algorithms-in-MATLAB/blob/master/3.%20Multiclass%20Classification%20and%20Neural%20Nets/images/1.3.1.1.PNG">
@@ -327,7 +327,7 @@ Lets use multiple one-vs-all logistic regression models to build a multi-class c
 </p>
 <br/>
 
-**Vectorizing the gradient **
+**Vectorizing the gradient**
 
 The gradient of the (unregularized) logistic regression cost is a vector where the jth element is defined as:
 
@@ -348,7 +348,7 @@ To vectorize this operation over the dataset, we start by writing out all the pa
 The expression above allows us to compute all the partial derivatives without any loops.
 <br/>
 
-**Vectorizing regularized logistic regression **
+**Vectorizing regularized logistic regression**
 
 Lets add regularization to the cost function, which is defined as:
 
@@ -357,7 +357,7 @@ Lets add regularization to the cost function, which is defined as:
 </p>
 <br/>
 
-**Code for the vectorizing the cost function, gradient and to account for regularization. **
+**Code for the vectorizing the cost function, gradient and to account for regularization.**
 
 ```matlab
 function [J, grad] = lrCostFunction(theta, X, y, lambda)
@@ -462,4 +462,15 @@ X = [ones(m, 1) X];
 ```matlab
 end
 ```
+
+## Neural Networks ##
+
+Lets implement a neural network to recognize handwritten digits using the same training set, since logistic regression cannot
+form more complex hypotheses as it is only a linear classifier. The neural network will be able to represent complex models that form non-linear hypotheses. Our goal is to implement the feedforward propagation algorithm to use our weights for prediction.
+
+**Model Representation**<br/>
+Our neural network has 3 layers { an input layer, a hidden layer and an output layer. Recall that our inputs are pixel values of
+digit images. Since the images are of size 20x20, this gives us 400 input layer units (excluding the extra bias unit which always outputs +1). The training data will be loaded into the variables X and y. Theta1 and Theta2 parameters have dimensions that are sized for a neural network with 25 units in the second layer and 10 output units (corresponding to the 10 digit classes).
+
+
 
