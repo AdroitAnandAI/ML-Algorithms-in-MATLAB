@@ -298,3 +298,159 @@ m = length(y); % number of training examples
 end
 ```
 
+# 3. Multiclass Classification and Neural Nets #
+
+Implementation of one-vs-all logistic regression and neural networks to recognize hand-written digits (from 0 to 9). Automated handwritten digit recognition is widely used today - from recognizing zip codes (postal codes) on mail envelopes to recognizing amounts written on bank checks.
+
+### Dataset Details
+
+There are 5000 training examples in the dataset, where each training example is a 20 pixel by 20 pixel grayscale image of the digit. Each pixel is represented by a oating point number indicating the grayscale intensity at that location. The 20 by 20 grid of pixels is "unrolled" into a 400-dimensional vector. Each of these training examples becomes a single row in our datamatrix X. This gives us a 5000 by 400 matrix X where every row is a training example for a handwritten digit image.
+
+<p align="center">
+    <img src="https://github.com/AdroitAnandAI/ML-Algorithms-in-MATLAB/blob/master/3.%20Multiclass%20Classification%20and%20Neural%20Nets/images/1.1.PNG">
+</p>
+
+The second part of the training set is a 5000-dimensional vector y that contains labels for the training set. To make things more compatible with Octave/MATLAB indexing, where there is no zero index, we have mapped the digit zero to the value ten. Therefore, a "0" digit is labeled as "10", while the digits "1" to "9" are labeled as "1" to "9" in their natural order.
+
+### Vectorizing Logistic Regression
+
+Lets use multiple one-vs-all logistic regression models to build a multi-class classifier. Since there are 10 classes, there is a need to train 10 separate logistic regression classifiers. To make this training efficient, it is important to ensure that our code is well vectorized. Here, we are implementing a vectorized version of logistic regression that does not employ any for loops.
+
+**Vectorizing the cost function **
+
+<p align="center">
+    <img src="https://github.com/AdroitAnandAI/ML-Algorithms-in-MATLAB/blob/master/3.%20Multiclass%20Classification%20and%20Neural%20Nets/images/1.3.1.1.PNG">
+</p>
+<p align="center">
+    <img src="https://github.com/AdroitAnandAI/ML-Algorithms-in-MATLAB/blob/master/3.%20Multiclass%20Classification%20and%20Neural%20Nets/images/1.3.1.2.PNG">
+</p>
+
+**Vectorizing the gradient **
+
+The gradient of the (unregularized) logistic regression cost is a vector where the jth element is defined as:
+<p align="center">
+    <img src="https://github.com/AdroitAnandAI/ML-Algorithms-in-MATLAB/blob/master/3.%20Multiclass%20Classification%20and%20Neural%20Nets/images/1.3.2.1.PNG">
+</p>
+
+To vectorize this operation over the dataset, we start by writing out all the partial derivatives explicitly for all theta(j):
+<p align="center">
+    <img src="https://github.com/AdroitAnandAI/ML-Algorithms-in-MATLAB/blob/master/3.%20Multiclass%20Classification%20and%20Neural%20Nets/images/1.3.2.2.PNG">
+</p>
+<p align="center">
+    <img src="https://github.com/AdroitAnandAI/ML-Algorithms-in-MATLAB/blob/master/3.%20Multiclass%20Classification%20and%20Neural%20Nets/images/1.3.2.3.PNG">
+</p>
+The expression above allows us to compute all the partial derivatives without any loops.
+
+**Vectorizing regularized logistic regression **
+
+Lets add regularization to the cost function, which is defined as:
+<p align="center">
+    <img src="https://github.com/AdroitAnandAI/ML-Algorithms-in-MATLAB/blob/master/3.%20Multiclass%20Classification%20and%20Neural%20Nets/images/1.3.3.PNG">
+</p>
+
+**Code for the vectorizing the cost function, gradient and to account for regularization. **
+
+```matlab
+function [J, grad] = lrCostFunction(theta, X, y, lambda)
+%LRCOSTFUNCTION Compute cost and gradient for logistic regression with 
+%regularization
+%   J = LRCOSTFUNCTION(theta, X, y, lambda) computes the cost of using
+%   theta as the parameter for regularized logistic regression and the
+%   gradient of the cost w.r.t. to the parameters. 
+
+% Initialize some useful values
+m = length(y); % number of training examples
+
+% You need to return the following variables correctly 
+J = 0;
+```
+> ` `**` grad = zeros(size(theta)); `**` ` <br/>
+
+> ` `**` J = -sum((y.*log(sigmoid(X*theta))+(1-y).*log(1-sigmoid(X*theta))))/m + (sum(theta.^2) - theta(1)^2)*lambda/(2*m); `**` ` <br/>
+
+> ` `**` reg_param = theta*(lambda/m);   `**` ` <br/>
+
+> ` `**` reg_param(1) = 0;  `**` ` <br/>
+
+> ` `**` grad = X'*(sigmoid(X*theta) - y)/m + reg_param;  `**` ` <br/>
+
+> ` `**` grad = grad(:);  `**` ` <br/>
+```matlab
+end
+```
+
+### One-vs-all Classification
+
+Lets implement one-vs-all classification by training multiple regularized logistic regression classifiers, one for each of the K classes in our dataset. In the handwritten digits dataset, K = 10, but our code will work for any value of K.
+
+```matlab
+function [all_theta] = oneVsAll(X, y, num_labels, lambda)
+%ONEVSALL trains multiple logistic regression classifiers and returns all
+%the classifiers in a matrix all_theta, where the i-th row of all_theta 
+%corresponds to the classifier for label i
+%   [all_theta] = ONEVSALL(X, y, num_labels, lambda) trains num_labels
+%   logistic regression classifiers and returns each of these classifiers
+%   in a matrix all_theta, where the i-th row of all_theta corresponds 
+%   to the classifier for label i
+
+% Some useful variables
+m = size(X, 1);
+n = size(X, 2);
+
+% You need to return the following variables correctly 
+all_theta = zeros(num_labels, n + 1);
+
+% Add ones to the X data matrix
+X = [ones(m, 1) X];
+
+    % Set Initial theta
+    initial_theta = zeros(n + 1, 1);
+    
+    % Set options for fminunc
+    options = optimset('GradObj', 'on', 'MaxIter', 50);
+
+    % Run fmincg to obtain the optimal theta
+    % This function will return theta and the cost 
+    for c = 1:num_labels
+```
+> ` `**`  theta] = ...
+            fmincg (@(t)(lrCostFunction(t, X, (y == c), lambda)), ...
+                    initial_theta, options); `**` ` <br/>
+               
+> ` `**`  all_theta(c,:) = theta;        `**` ` <br/>
+                
+```matlab
+    end;
+end
+```
+
+### One-vs-all Prediction
+
+After training one-vs-all classifier, we can now use it to predict the digit contained in a given image. For each input, the "probability" is computed for each class using the trained logistic regression classifiers. One-vs-all prediction function will pick the class for which the corresponding logistic regression classifier outputs the highest probability and return the class label (1, 2,..., or K) as the prediction for the input example.
+
+```matlab
+function p = predictOneVsAll(all_theta, X)
+%PREDICT Predict the label for a trained one-vs-all classifier. The labels 
+%are in the range 1..K, where K = size(all_theta, 1). 
+%  p = PREDICTONEVSALL(all_theta, X) will return a vector of predictions
+%  for each example in the matrix X. Note that X contains the examples in
+%  rows. all_theta is a matrix where the i-th row is a trained logistic
+%  regression theta vector for the i-th class. You should set p to a vector
+%  of values from 1..K (e.g., p = [1; 3; 1; 2] predicts classes 1, 3, 1, 2
+%  for 4 examples) 
+
+m = size(X, 1);
+num_labels = size(all_theta, 1);
+
+p = zeros(size(X, 1), 1);
+
+% Add ones to the X data matrix
+X = [ones(m, 1) X];
+```
+> ` `**` all_probability = sigmoid (all_theta*X'); `**` ` <br/>
+
+> ` `**` [M p] = max(all_probability', [], 2); `**` ` <br/>
+```matlab
+end
+```
+
