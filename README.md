@@ -312,9 +312,10 @@ There are 5000 training examples in the dataset, where each training example is 
 
 The second part of the training set is a 5000-dimensional vector y that contains labels for the training set. To make things more compatible with Octave/MATLAB indexing, where there is no zero index, we have mapped the digit zero to the value ten. Therefore, a "0" digit is labeled as "10", while the digits "1" to "9" are labeled as "1" to "9" in their natural order.
 
-### Vectorizing Logistic Regression
+### Vectorizing Logistic Regression ###
 
-Lets use multiple one-vs-all logistic regression models to build a multi-class classifier. Since there are 10 classes, there is a need to train 10 separate logistic regression classifiers. To make this training efficient, it is important to ensure that our code is well vectorized. Here, we are implementing a vectorized version of logistic regression that does not employ any for loops.
+Lets use multiple one-vs-all logistic regression models to build a multi-class classifier. Since there are 10 classes, there is a need to train 10 separate logistic regression classifiers. To make this training efficient, it is important to ensure that our code is well vectorized. Here, we are implementing a vectorized version of logistic regression that does not employ any for loops. 
+<br/>
 
 **Vectorizing the cost function **
 
@@ -324,29 +325,37 @@ Lets use multiple one-vs-all logistic regression models to build a multi-class c
 <p align="center">
     <img src="https://github.com/AdroitAnandAI/ML-Algorithms-in-MATLAB/blob/master/3.%20Multiclass%20Classification%20and%20Neural%20Nets/images/1.3.1.2.PNG">
 </p>
+<br/>
 
 **Vectorizing the gradient **
 
 The gradient of the (unregularized) logistic regression cost is a vector where the jth element is defined as:
+
 <p align="center">
     <img src="https://github.com/AdroitAnandAI/ML-Algorithms-in-MATLAB/blob/master/3.%20Multiclass%20Classification%20and%20Neural%20Nets/images/1.3.2.1.PNG">
 </p>
 
 To vectorize this operation over the dataset, we start by writing out all the partial derivatives explicitly for all theta(j):
+
 <p align="center">
     <img src="https://github.com/AdroitAnandAI/ML-Algorithms-in-MATLAB/blob/master/3.%20Multiclass%20Classification%20and%20Neural%20Nets/images/1.3.2.2.PNG">
 </p>
+
 <p align="center">
     <img src="https://github.com/AdroitAnandAI/ML-Algorithms-in-MATLAB/blob/master/3.%20Multiclass%20Classification%20and%20Neural%20Nets/images/1.3.2.3.PNG">
 </p>
+
 The expression above allows us to compute all the partial derivatives without any loops.
+<br/>
 
 **Vectorizing regularized logistic regression **
 
 Lets add regularization to the cost function, which is defined as:
+
 <p align="center">
     <img src="https://github.com/AdroitAnandAI/ML-Algorithms-in-MATLAB/blob/master/3.%20Multiclass%20Classification%20and%20Neural%20Nets/images/1.3.3.PNG">
 </p>
+<br/>
 
 **Code for the vectorizing the cost function, gradient and to account for regularization. **
 
