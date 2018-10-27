@@ -300,17 +300,20 @@ end
 
 # 3. Multiclass Classification and Neural Nets #
 
-Implementation of one-vs-all logistic regression and neural networks to recognize hand-written digits (from 0 to 9). Automated handwritten digit recognition is widely used today - from recognizing zip codes (postal codes) on mail envelopes to recognizing amounts written on bank checks.
+Implementation of one-vs-all logistic regression and neural networks to recognize hand-written digits (from 0 to 9). 
 
 ### Dataset Details
 
 There are 5000 training examples in the dataset, where each training example is a 20 pixel by 20 pixel grayscale image of the digit. Each pixel is represented by a oating point number indicating the grayscale intensity at that location. The 20 by 20 grid of pixels is "unrolled" into a 400-dimensional vector. Each of these training examples becomes a single row in our datamatrix X. This gives us a 5000 by 400 matrix X where every row is a training example for a handwritten digit image.
 
-<p align="center">
-    <img src="https://github.com/AdroitAnandAI/ML-Algorithms-in-MATLAB/blob/master/3.%20Multiclass%20Classification%20and%20Neural%20Nets/images/1.1.PNG">
-</p>
+### Visualizing the data
 
-The second part of the training set is a 5000-dimensional vector y that contains labels for the training set. To make things more compatible with Octave/MATLAB indexing, where there is no zero index, we have mapped the digit zero to the value ten. Therefore, a "0" digit is labeled as "10", while the digits "1" to "9" are labeled as "1" to "9" in their natural order.
+The below function maps each row to a 20 pixel by 20 pixel grayscale image and displays the images together.
+
+<p align="center">
+    <img src="https://github.com/AdroitAnandAI/ML-Algorithms-in-MATLAB/blob/master/3.%20Multiclass%20Classification%20and%20Neural%20Nets/images/1.2.PNG">
+</p>
+<br/>
 
 ### Vectorizing Logistic Regression ###
 
@@ -322,33 +325,15 @@ Lets use multiple one-vs-all logistic regression models to build a multi-class c
 <p align="center">
     <img src="https://github.com/AdroitAnandAI/ML-Algorithms-in-MATLAB/blob/master/3.%20Multiclass%20Classification%20and%20Neural%20Nets/images/1.3.1.1.PNG">
 </p>
-<p align="center">
-    <img src="https://github.com/AdroitAnandAI/ML-Algorithms-in-MATLAB/blob/master/3.%20Multiclass%20Classification%20and%20Neural%20Nets/images/1.3.1.2.PNG">
-</p>
 <br/>
 
-**Vectorizing the gradient**
+**Vectorizing regularized logistic regression**
 
 The gradient of the (unregularized) logistic regression cost is a vector where the jth element is defined as:
 
 <p align="center">
     <img src="https://github.com/AdroitAnandAI/ML-Algorithms-in-MATLAB/blob/master/3.%20Multiclass%20Classification%20and%20Neural%20Nets/images/1.3.2.1.PNG">
 </p>
-
-To vectorize this operation over the dataset, we start by writing out all the partial derivatives explicitly for all theta(j):
-
-<p align="center">
-    <img src="https://github.com/AdroitAnandAI/ML-Algorithms-in-MATLAB/blob/master/3.%20Multiclass%20Classification%20and%20Neural%20Nets/images/1.3.2.2.PNG">
-</p>
-
-<p align="center">
-    <img src="https://github.com/AdroitAnandAI/ML-Algorithms-in-MATLAB/blob/master/3.%20Multiclass%20Classification%20and%20Neural%20Nets/images/1.3.2.3.PNG">
-</p>
-
-The expression above allows us to compute all the partial derivatives without any loops.
-<br/>
-
-**Vectorizing regularized logistic regression**
 
 Lets add regularization to the cost function, which is defined as:
 
@@ -433,50 +418,15 @@ X = [ones(m, 1) X];
 end
 ```
 
-### One-vs-all Prediction
-
-After training one-vs-all classifier, we can now use it to predict the digit contained in a given image. For each input, the "probability" is computed for each class using the trained logistic regression classifiers. One-vs-all prediction function will pick the class for which the corresponding logistic regression classifier outputs the highest probability and return the class label (1, 2,..., or K) as the prediction for the input example.
-
-```matlab
-function p = predictOneVsAll(all_theta, X)
-%PREDICT Predict the label for a trained one-vs-all classifier. The labels 
-%are in the range 1..K, where K = size(all_theta, 1). 
-%  p = PREDICTONEVSALL(all_theta, X) will return a vector of predictions
-%  for each example in the matrix X. Note that X contains the examples in
-%  rows. all_theta is a matrix where the i-th row is a trained logistic
-%  regression theta vector for the i-th class. You should set p to a vector
-%  of values from 1..K (e.g., p = [1; 3; 1; 2] predicts classes 1, 3, 1, 2
-%  for 4 examples) 
-
-m = size(X, 1);
-num_labels = size(all_theta, 1);
-
-p = zeros(size(X, 1), 1);
-
-% Add ones to the X data matrix
-X = [ones(m, 1) X];
-```
-> ` `**` all_probability = sigmoid (all_theta*X'); `**` ` <br/>
-
-> ` `**` [M p] = max(all_probability', [], 2); `**` ` <br/>
-```matlab
-end
-```
-
 ## Neural Networks ##
 
-Lets implement a neural network to recognize handwritten digits using the same training set, since logistic regression cannot
-form more complex hypotheses as it is only a linear classifier. The neural network will be able to represent complex models that form non-linear hypotheses. Our goal is to implement the feedforward propagation algorithm to use our weights for prediction.
-
-**Model Representation**<br/>
-Our neural network has 3 layers { an input layer, a hidden layer and an output layer. Recall that our inputs are pixel values of
-digit images. Since the images are of size 20x20, this gives us 400 input layer units (excluding the extra bias unit which always outputs +1). The training data will be loaded into the variables X and y. Theta1 and Theta2 parameters have dimensions that are sized for a neural network with 25 units in the second layer and 10 output units (corresponding to the 10 digit classes).
+The neural network will be able to represent complex models that form non-linear hypotheses unlike logistic regression. Hence, lets implement a neural network to recognize handwritten digits. Our neural network has 3 layers & Theta1 and Theta2 parameters have dimensions that are sized for a neural network with 25 units in the second layer and 10 output units (corresponding to the 10 digit classes).
 
 <p align="center">
     <img src="https://github.com/AdroitAnandAI/ML-Algorithms-in-MATLAB/blob/master/3.%20Multiclass%20Classification%20and%20Neural%20Nets/images/2.1.PNG">
 </p>
 
-**Feedforward Propagation and Prediction**
+### Feedforward Propagation and Prediction ###
 
 ```matlab
 function p = predict(Theta1, Theta2, X)
