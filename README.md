@@ -453,3 +453,162 @@ a3 = sigmoid(z3);
 end
 ```
 
+# 4. Neural Networks Learning #
+
+To implement the backpropagation algorithm for neural networks and apply it to the task of hand-written digit recognition.
+
+### Feedforward and Cost Function ###
+
+Lets implement the cost function and gradient for the neural network.
+
+```matlab
+function [J grad] = nnCostFunction(nn_params, ...
+                                   input_layer_size, ...
+                                   hidden_layer_size, ...
+                                   num_labels, ...
+                                   X, y, lambda)
+%NNCOSTFUNCTION Implements the neural network cost function for a two layer
+%neural network which performs classification
+%   [J grad] = NNCOSTFUNCTON(nn_params, hidden_layer_size, num_labels, ...
+%   X, y, lambda) computes the cost and gradient of the neural network. The
+%   parameters for the neural network are "unrolled" into the vector
+%   nn_params and need to be converted back into the weight matrices. 
+% 
+%   The returned parameter grad should be a "unrolled" vector of the
+%   partial derivatives of the neural network.
+%
+
+% Reshape nn_params back into the parameters Theta1 and Theta2, the weight matrices
+% for our 2 layer neural network
+Theta1 = reshape(nn_params(1:hidden_layer_size * (input_layer_size + 1)), ...
+                 hidden_layer_size, (input_layer_size + 1));
+
+Theta2 = reshape(nn_params((1 + (hidden_layer_size * (input_layer_size + 1))):end), ...
+                 num_labels, (hidden_layer_size + 1));
+
+% Setup some useful variables
+m = size(X, 1);
+         
+J = 0;
+Theta1_grad = zeros(size(Theta1));
+Theta2_grad = zeros(size(Theta2));
+capDelta1 = zeros(size(Theta1));
+capDelta2 = zeros(size(Theta2));
+
+% Part 1: Feedforward the neural network and return the cost in the
+%         variable J. 
+%
+% Part 2: backpropagation algorithm to compute the gradients
+%         Theta1_grad and Theta2_grad. returns the partial derivatives of
+%         the cost function with respect to Theta1 and Theta2 in Theta1_grad and
+%         Theta2_grad, respectively. Then run checkNNGradients
+
+% Part 3: Implement regularization with the cost function and gradients.
+
+X = [ones(size(X, 1), 1) X];
+a1 = X; % to calculate gradient DELTA
+z2 = X*Theta1';
+a2 = sigmoid(z2);
+
+a2 = [ones(size(a2, 1), 1) a2];
+z3 = a2*Theta2';
+a3 = sigmoid(z3);  % a3 is H_theta(x)
+
+decodedY = recode(y, num_labels);
+
+for i=1:m
+        J = J - sum((decodedY(i,:).*log(a3(i,:))) +...
+                  (1-decodedY(i,:)).*log(1-a3(i,:)))/m;
+end;
+
+%Adding the Cost Regularization parameter
+%Remove the 1st column to eliminate the bias
+J = J + (sum(sum(Theta1(:,2:size(Theta1,2)).^2)) + ...
+         sum(sum(Theta2(:,2:size(Theta2,2)).^2)))*lambda/(2*m);
+
+for t = 1:m
+    delta3 = a3(t,:) - decodedY(t,:);
+    delta2 = (delta3*Theta2(:,2:size(Theta2,2))).*sigmoidGradient(z2(t,:));
+
+    capDelta1 = capDelta1 + delta2'*a1(t,:);
+    capDelta2 = capDelta2 + delta3'*a2(t,:);
+    
+end
+
+Theta1_grad = capDelta1/m; 
+Theta1_grad(:,2:end) = Theta1_grad(:,2:end) + Theta1(:,2:end)*lambda/m; %To regularize NN
+Theta2_grad = capDelta2/m;
+Theta2_grad(:,2:end) = Theta2_grad(:,2:end) + Theta2(:,2:end)*lambda/m; %To regularize NN
+
+% Unroll gradients
+grad = [Theta1_grad(:) ; Theta2_grad(:)];
+
+end
+
+function m = recode(codedVector, k)
+    
+    t = size(codedVector,1);
+%     temp = zeros(t, k+1);
+    m = zeros(t, k);
+    for i=1:t
+%         if codedVector(i)==10
+%             m(i,1) = 1;
+%         else
+            m(i, codedVector(i)) = 1;
+%         end
+    end
+
+end
+```
+
+### Regularized cost function ###
+
+The cost function for neural networks with regularization is given by
+
+<p align="center">
+    <img src="https://github.com/AdroitAnandAI/ML-Algorithms-in-MATLAB/blob/master/4.%20Neural%20Networks%20Learning/images/1.4.PNG">
+</p>
+
+### Backpropagation ###
+
+To implement the backpropagation algorithm to compute the gradient for the neural network cost function.
+
+**Sigmoid gradient**
+
+The gradient for the sigmoid function can be computed as
+
+<p align="center">
+    <img src="https://github.com/AdroitAnandAI/ML-Algorithms-in-MATLAB/blob/master/4.%20Neural%20Networks%20Learning/images/2.1.PNG">
+</p>
+
+**Random initialization**
+
+When training neural networks, it is important to randomly initialize the parameters for symmetry breaking.
+
+```matlab
+function W = randInitializeWeights(L_in, L_out)
+%RANDINITIALIZEWEIGHTS Randomly initialize the weights of a layer with L_in
+%incoming connections and L_out outgoing connections
+%   W = RANDINITIALIZEWEIGHTS(L_in, L_out) randomly initializes the weights 
+%   of a layer with L_in incoming connections and L_out outgoing 
+%   connections. 
+%
+%   Note that W should be set to a matrix of size(L_out, 1 + L_in) as
+%   the first column of W handles the "bias" terms
+
+W = zeros(L_out, 1 + L_in); 
+
+% Randomly initialize the weights to small values
+epsilon_init = 0.12;
+W = rand(L_out, 1 + L_in) * 2 * epsilon_init - epsilon_init;
+
+end
+```
+
+**Backpropagation**
+
+<p align="center">
+    <img src="https://github.com/AdroitAnandAI/ML-Algorithms-in-MATLAB/blob/master/4.%20Neural%20Networks%20Learning/images/2.3.PNG">
+</p>
+
+
