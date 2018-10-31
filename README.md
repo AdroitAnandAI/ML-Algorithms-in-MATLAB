@@ -674,3 +674,183 @@ fprintf(['If your backpropagation implementation is correct, then \n' ...
 
 end
 ```
+
+# 5. Regularized Linear Regression #
+
+Lets implement regularized linear regression and use it to study models with different bias-variance properties. One model here is to predict the amount of water owing out of a dam using the change of water level in a reservoir.
+
+### Visualizing the dataset ###
+
+To visualize the dataset containing historical records on the change in the water level, x, and the amount of water owing out of the dam, y. This dataset is divided into three parts:
+• A training set that your model will learn on: X, y
+• A cross validation set for determining the regularization parameter: Xval, yval
+• A test set for evaluating performance.
+
+```matlab
+% Load from ex5data1: 
+load ('ex5data1.mat');
+
+% m = Number of examples
+m = size(X, 1);
+
+% Plot training data
+plot(X, y, 'rx', 'MarkerSize', 10, 'LineWidth', 1.5);
+xlabel('Change in water level (x)');
+ylabel('Water flowing out of the dam (y)');
+```
+
+<p align="center">
+    <img src="https://github.com/AdroitAnandAI/ML-Algorithms-in-MATLAB/blob/master/5.%20Regularized%20Linear%20Regression/images/1.1.PNG">
+</p>
+
+### Regularized linear regression cost function ###
+
+Regularized linear regression has the following cost function:
+
+<p>
+    <img src="https://github.com/AdroitAnandAI/ML-Algorithms-in-MATLAB/blob/master/5.%20Regularized%20Linear%20Regression/images/1.2.PNG">
+</p>
+
+### Regularized linear regression gradient ###
+
+<p>
+    <img src="https://github.com/AdroitAnandAI/ML-Algorithms-in-MATLAB/blob/master/5.%20Regularized%20Linear%20Regression/images/1.3.PNG">
+</p>
+
+```matlab
+function [J, grad] = linearRegCostFunction(X, y, theta, lambda)
+%LINEARREGCOSTFUNCTION Compute cost and gradient for regularized linear 
+%regression with multiple variables
+%   [J, grad] = LINEARREGCOSTFUNCTION(X, y, theta, lambda) computes the 
+%   cost of using theta as the parameter for linear regression to fit the 
+%   data points in X and y. Returns the cost in J and the gradient in grad
+
+% Initialize some useful values
+m = length(y); % number of training examples
+
+J = 0;
+grad = zeros(size(theta));
+
+%Regularization Parameter
+regParam = (sum(theta.^2) - theta(1)^2)*lambda;
+
+%Cost of linear regression
+J = (sum((X*theta- y).^2) + regParam)/(2*m);
+
+%Calculating Gradients
+grad = (X'*(X*theta - y))/m;
+
+regParam = theta*lambda/m;
+regParam(1) = 0;
+
+grad = grad + regParam;
+
+grad = grad(:);
+
+end
+```
+### Fitting linear regression ###
+
+To compute the optimal values of theta, we set regularization parameter to zero. Because our current implementation of linear regression is trying to fit a 2-dimensional theta, regularization will not be incredibly helpful for a theta of such low dimension.
+
+```matlab
+%  Train linear regression with lambda = 0
+lambda = 1;
+[theta] = trainLinearReg([ones(m, 1) X], y, lambda);
+
+%  Plot fit over the data
+plot(X, y, 'rx', 'MarkerSize', 10, 'LineWidth', 1.5);
+xlabel('Change in water level (x)');
+ylabel('Water flowing out of the dam (y)');
+hold on;
+plot(X, [ones(m, 1) X]*theta, '--', 'LineWidth', 2)
+```
+<p align="center">
+    <img src="https://github.com/AdroitAnandAI/ML-Algorithms-in-MATLAB/blob/master/5.%20Regularized%20Linear%20Regression/images/1.4.PNG">
+</p>
+
+### Bias-variance ###
+
+An important concept in machine learning is the bias-variance tradeoff. Models with high bias are not complex enough for the data and tend to underfit, while models with high variance overfit to the training data. We will plot training and test errors on a learning curve to diagnose bias-variance problems.
+
+**Learning curves**
+
+A learning curve plots training and cross validation error as a function of training set size. To plot the learning curve, we need a training and cross validation set error for different training set sizes. To obtain different training set sizes, you should use different subsets of the original training set X. Specifically, for a training set size of i, you should use the first i examples (i.e., X(1:i,:) and y(1:i)).
+
+Training error for a dataset is defined as:
+<p align="center">
+    <img src="https://github.com/AdroitAnandAI/ML-Algorithms-in-MATLAB/blob/master/5.%20Regularized%20Linear%20Regression/images/2.1.PNG">
+</p>
+
+```matlab
+function [error_train, error_val] = ...
+    learningCurve(X, y, Xval, yval, lambda)
+%LEARNINGCURVE Generates the train and cross validation set errors needed 
+%to plot a learning curve
+%   [error_train, error_val] = ...
+%       LEARNINGCURVE(X, y, Xval, yval, lambda) returns the train and
+%       cross validation set errors for a learning curve. In particular, 
+%       it returns two vectors of the same length - error_train and 
+%       error_val. Then, error_train(i) contains the training error for
+%       i examples (and similarly for error_val(i)).
+%
+%   In this function, you will compute the train and test errors for
+%   dataset sizes from 1 up to m. In practice, when working with larger
+%   datasets, you might want to do this in larger intervals.
+%
+
+% Number of training examples
+m = size(X, 1);
+
+error_train = zeros(m, 1);
+error_val   = zeros(m, 1);
+
+      for i = 1:m
+          % Compute train/cross validation errors using training examples 
+          % X(1:i, :) and y(1:i), storing the result in 
+          % error_train(i) and error_val(i)
+          
+          for j = 1:i
+              theta = trainLinearReg(X(1:i, :), y(1:i), lambda);
+              error_train(i) = linearRegCostFunction(X(1:i, :), y(1:i), theta, 0);
+              error_val(i) = linearRegCostFunction(Xval, yval, theta, 0);
+              
+          end
+          
+      end
+end
+```
+
+<p align="center">
+    <img src="https://github.com/AdroitAnandAI/ML-Algorithms-in-MATLAB/blob/master/5.%20Regularized%20Linear%20Regression/images/2.1.2.PNG">
+</p>
+
+We can observe that both the train error and cross validation error are high when the number of training examples is increased. This
+reflects a high bias problem in the model - the linear regression model is too simple and is unable to fit our dataset well.
+
+### Polynomial regression ###
+
+The problem with our linear model was that it was too simple for the data and resulted in underfitting (high bias).
+
+<p>
+    <img src="https://github.com/AdroitAnandAI/ML-Algorithms-in-MATLAB/blob/master/5.%20Regularized%20Linear%20Regression/images/3.PNG">
+</p>
+
+```matlab
+function [X_poly] = polyFeatures(X, p)
+%POLYFEATURES Maps X (1D vector) into the p-th power
+%   [X_poly] = POLYFEATURES(X, p) takes a data matrix X (size m x 1) and
+%   maps each example into its polynomial features where
+%   X_poly(i, :) = [X(i) X(i).^2 X(i).^3 ...  X(i).^p];
+%
+
+X_poly = zeros(numel(X), p);
+
+for i = 1:size(X,1)
+    for j = 1:p
+        X_poly(i, j) = X(i).^j;
+    end
+end
+end
+```
+
