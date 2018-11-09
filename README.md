@@ -896,3 +896,315 @@ end
 <p align="center">
     <img src="https://github.com/AdroitAnandAI/ML-Algorithms-in-MATLAB/blob/master/5.%20Regularized%20Linear%20Regression/images/3.3.PNG">
 </p>
+
+# 6. Support Vector Machines #
+
+Lets use support vector machines (SVMs) to build a spam classifier. Experimenting with the given 2D datasets will help you gain an intuition of how SVMs work and how to use a Gaussian kernel with SVMs.
+
+### Plotting 2D dataset 1
+
+We will begin by with a 2D example dataset which can be separated by a linear boundary. In this dataset, the positions of the positive examples (indicated with +) and the negative examples (indicated with o) suggest a natural separation indicated by the gap. However, notice that there is an outlier positive example + on the far left at about (0:1; 4:1).
+
+```matlab
+fprintf('Loading and Visualizing Data ...\n')
+
+% Load from ex6data1: 
+% You will have X, y in your environment
+load('ex6data1.mat');
+
+% Plot training data
+plotData(X, y);
+```
+
+<p align="center">
+    <img src="https://github.com/AdroitAnandAI/ML-Algorithms-in-MATLAB/blob/master/6.%20Support%20Vector%20Machines/images/1.1.PNG">
+</p>
+
+### SVM with Gaussian Kernels ###
+
+We will be using SVMs to do non-linear classification. In particular, we will be using SVMs with Gaussian kernels on datasets that are not linearly separable.
+
+To find non-linear decision boundaries with the SVM, we need to first implement a Gaussian kernel. You can think of the Gaussian kernel as a similarity function that measures the \distance" between a pair of examples, (x(i); x(j)). The Gaussian kernel is also parameterized by a bandwidth parameter, sigma, which determines how fast the similarity metric decreases (to 0) as the examples are further apart.
+
+The Gaussian kernel function is defined as:
+
+<p>
+    <img src="https://github.com/AdroitAnandAI/ML-Algorithms-in-MATLAB/blob/master/6.%20Support%20Vector%20Machines/images/1.2.1.PNG">
+</p>
+
+```matlab
+function sim = gaussianKernel(x1, x2, sigma)
+%RBFKERNEL returns a radial basis function kernel between x1 and x2
+%   sim = gaussianKernel(x1, x2) returns a gaussian kernel between x1 and x2
+%   and returns the value in sim
+
+% Ensure that x1 and x2 are column vectors
+x1 = x1(:); x2 = x2(:);
+
+% You need to return the following variables correctly.
+sim = 0;
+
+sim = exp(-sum((x1-x2).^2)/(2*sigma^2));
+    
+end
+```
+
+### Plotting 2D dataset 2
+
+```matlab
+=============== Part 4: Visualizing Dataset 2 ================
+%  The following code will load the next dataset into your environment and 
+%  plot the data. 
+%
+
+fprintf('Loading and Visualizing Data ...\n')
+
+% Load from ex6data2: 
+% You will have X, y in your environment
+load('ex6data2.mat');
+
+% Plot training data
+plotData(X, y);
+
+```
+
+<p align="center">
+    <img src="https://github.com/AdroitAnandAI/ML-Algorithms-in-MATLAB/blob/master/6.%20Support%20Vector%20Machines/images/1.2.2.PNG">
+</p>
+
+From the figure, we can observe that there is no linear decision boundary that separates the positive and negative examples for this dataset. However, by using the Gaussian kernel with the SVM, we are able to learn a non-linear decision boundary that can perform reasonably well for the dataset.
+
+### Plotting 2D dataset 3 ###
+
+Lets use a SVM with a Gaussian kernel. Our task is to use the cross validation set Xval, yval to determine the best C and sigma parameter to use.
+
+```matlab
+function [C, sigma] = dataset3Params(X, y, Xval, yval)
+%DATASET3PARAMS returns your choice of C and sigma for Part 3 of the exercise
+%where you select the optimal (C, sigma) learning parameters to use for SVM
+%with RBF kernel
+%   [C, sigma] = DATASET3PARAMS(X, y, Xval, yval) returns your choice of C and 
+%   sigma. You should complete this function to return the optimal C and 
+%   sigma based on a cross-validation set.
+%
+
+% You need to return the following variables correctly.
+C = 1;
+sigma = 0.3;
+
+steps = [0.01 0.03 0.1 0.3 1 3 10 30];
+
+minError = 1000;
+
+for i = 1:numel(steps)
+    testC = steps(i);
+    for j=1:numel(steps)
+        testSigma = steps(j);
+        % Train the SVM
+        model= svmTrain(X, y, testC, @(x1, x2) gaussianKernel(x1, x2, testSigma));
+        predictions = svmPredict(model, Xval);
+        meanError = mean(double(predictions ~= yval));
+        
+        if (meanError < minError)
+            minError = meanError;
+            C = testC;
+            sigma = testSigma;
+            fprintf('MeanError = %f', meanError);
+        end
+            
+    end
+end
+
+end
+```
+
+**Below is the figure generated after plotting the dataset.**
+
+<p align="center">
+    <img src="https://github.com/AdroitAnandAI/ML-Algorithms-in-MATLAB/blob/master/6.%20Support%20Vector%20Machines/images/1.2.3.1.PNG"> 
+</p>
+
+**SVM (Gaussian Kernel) Decision Boundary for the plotted dataset:**
+
+<p align="center">
+    <img src="https://github.com/AdroitAnandAI/ML-Algorithms-in-MATLAB/blob/master/6.%20Support%20Vector%20Machines/images/1.2.3.2.PNG">
+</p>
+
+### Spam Classification ###
+
+Many email services today provide spam lters that are able to classify emails into spam and non-spam email with high accuracy. In this part of the exercise, we will use SVMs to build your own spam filter.
+
+Given the vocabulary list, we can now map each word in the preprocessed emails into a list of word indices that contains the index of the word in the vocabulary list. Specifically, in a sample email, the word "anyone" was first normalized to "anyon" and then mapped onto the index in the vocabulary list.
+
+```matlab
+function word_indices = processEmail(email_contents)
+%PROCESSEMAIL preprocesses a the body of an email and
+%returns a list of word_indices 
+%   word_indices = PROCESSEMAIL(email_contents) preprocesses 
+%   the body of an email and returns a list of indices of the 
+%   words contained in the email. 
+%
+
+% Load Vocabulary
+vocabList = getVocabList();
+
+% Init return value
+word_indices = [];
+
+% ========================== Preprocess Email ===========================
+
+% Find the Headers ( \n\n and remove )
+% Uncomment the following lines if you are working with raw emails with the
+% full headers
+
+% hdrstart = strfind(email_contents, ([char(10) char(10)]));
+% email_contents = email_contents(hdrstart(1):end);
+
+% Lower case
+email_contents = lower(email_contents);
+
+% Strip all HTML
+% Looks for any expression that starts with < and ends with > and replace
+% and does not have any < or > in the tag it with a space
+email_contents = regexprep(email_contents, '<[^<>]+>', ' ');
+
+% Handle Numbers
+% Look for one or more characters between 0-9
+email_contents = regexprep(email_contents, '[0-9]+', 'number');
+
+% Handle URLS
+% Look for strings starting with http:// or https://
+email_contents = regexprep(email_contents, ...
+                           '(http|https)://[^\s]*', 'httpaddr');
+
+% Handle Email Addresses
+% Look for strings with @ in the middle
+email_contents = regexprep(email_contents, '[^\s]+@[^\s]+', 'emailaddr');
+
+% Handle $ sign
+email_contents = regexprep(email_contents, '[$]+', 'dollar');
+
+
+% ========================== Tokenize Email ===========================
+
+% Output the email to screen as well
+fprintf('\n==== Processed Email ====\n\n');
+
+% Process file
+l = 0;
+
+while ~isempty(email_contents)
+
+    % Tokenize and also get rid of any punctuation
+    [str, email_contents] = ...
+       strtok(email_contents, ...
+              [' @$/#.-:&*+=[]?!(){},''">_<;%' char(10) char(13)]);
+   
+    % Remove any non alphanumeric characters
+    str = regexprep(str, '[^a-zA-Z0-9]', '');
+
+    % Stem the word 
+    % (the porterStemmer sometimes has issues, so we use a try catch block)
+    try str = porterStemmer(strtrim(str)); 
+    catch str = ''; continue;
+    end;
+
+    % Skip the word if it is too short
+    if length(str) < 1
+       continue;
+    end
+
+    % Look up the word in the dictionary and add to word_indices if
+    % found
+   
+    vocabLength = numel(vocabList);
+    
+    for i = 1:vocabLength
+        if (strcmp(str, vocabList(i)) == 1)
+            word_indices = [word_indices ; i];
+        end
+    end
+   
+     % Print to screen, ensuring that the output lines are not too long
+    if (l + length(str) + 1) > 78
+        fprintf('\n');
+        l = 0;
+    end
+    fprintf('%s ', str);
+    l = l + length(str) + 1;
+
+end
+
+% Print footer
+fprintf('\n\n=========================\n');
+
+end
+```
+
+### Extracting Features from Emails ###
+
+We will now implement the feature extraction that converts each email into a vector. for a typical email, features would look like:
+
+<p align="center">
+    <img src="https://github.com/AdroitAnandAI/ML-Algorithms-in-MATLAB/blob/master/6.%20Support%20Vector%20Machines/images/2.2.PNG">
+</p>
+
+```matlab
+function x = emailFeatures(word_indices)
+%EMAILFEATURES takes in a word_indices vector and produces a feature vector
+%from the word indices
+%   x = EMAILFEATURES(word_indices) takes in a word_indices vector and 
+%   produces a feature vector from the word indices. 
+
+% Total number of words in the dictionary
+n = 1899;
+
+% You need to return the following variables correctly.
+x = zeros(n, 1);
+
+% ====================== YOUR CODE HERE ======================
+% Instructions: Fill in this function to return a feature vector for the
+%               given email (word_indices). To help make it easier to 
+%               process the emails, we have have already pre-processed each
+%               email and converted each word in the email into an index in
+%               a fixed dictionary (of 1899 words). The variable
+%               word_indices contains the list of indices of the words
+%               which occur in one email.
+% 
+%               Concretely, if an email has the text:
+%
+%                  The quick brown fox jumped over the lazy dog.
+%
+%               Then, the word_indices vector for this text might look 
+%               like:
+%               
+%                   60  100   33   44   10     53  60  58   5
+%
+%               where, we have mapped each word onto a number, for example:
+%
+%                   the   -- 60
+%                   quick -- 100
+%                   ...
+%
+%              (note: the above numbers are just an example and are not the
+%               actual mappings).
+%
+%              Our task is take one such word_indices vector and construct
+%              a binary feature vector that indicates whether a particular
+%              word occurs in the email. That is, x(i) = 1 when word i
+%              is present in the email. Concretely, if the word 'the' (say,
+%              index 60) appears in the email, then x(60) = 1. The feature
+%              vector should look like:
+%
+%              x = [ 0 0 0 0 1 0 0 0 ... 0 0 0 0 1 ... 0 0 0 1 0 ..];
+%
+%
+
+emailLen = numel(word_indices);
+for i = 1:emailLen
+    x(word_indices(i)) = 1;
+end
+
+end
+```
+
