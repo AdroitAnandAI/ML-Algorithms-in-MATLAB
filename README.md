@@ -854,3 +854,45 @@ end
 end
 ```
 
+### Selecting Lambda using a cross validation set ###
+
+Here, we will implement an automated method to select the lambda parameter. Concretely, we will use a cross validation set to evaluate
+how good each lambda value is. After selecting the best lambda value using the cross validation set, we can then evaluate the model on the test set to estimate how well the model will perform on actual unseen data.
+
+```matlab
+function [lambda_vec, error_train, error_val] = ...
+    validationCurve(X, y, Xval, yval)
+%VALIDATIONCURVE Generate the train and validation errors needed to
+%plot a validation curve that we can use to select lambda
+%   [lambda_vec, error_train, error_val] = ...
+%       VALIDATIONCURVE(X, y, Xval, yval) returns the train
+%       and validation errors (in error_train, error_val)
+%       for different values of lambda. You are given the training set (X,
+%       y) and validation set (Xval, yval).
+%
+
+% Selected values of lambda (you should not change this)
+lambda_vec = [0 0.001 0.003 0.01 0.03 0.1 0.3 1 3 10]';
+
+% You need to return these variables correctly.
+error_train = zeros(length(lambda_vec), 1);
+error_val = zeros(length(lambda_vec), 1);
+
+      for i = 1:length(lambda_vec)
+          lambda = lambda_vec(i);
+          % Compute train / val errors when training linear 
+          % regression with regularization parameter lambda
+          % You should store the result in error_train(i)
+          % and error_val(i)
+          
+          theta = trainLinearReg(X, y, lambda);
+          error_train(i) = linearRegCostFunction(X, y, theta, 0);
+          error_val(i) = linearRegCostFunction(Xval, yval, theta, 0);
+              
+      end
+end
+```
+
+<p align="center">
+    <img src="https://github.com/AdroitAnandAI/ML-Algorithms-in-MATLAB/blob/master/5.%20Regularized%20Linear%20Regression/images/3.3.PNG">
+</p>
