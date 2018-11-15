@@ -1412,3 +1412,207 @@ axis square;
     <img src="https://github.com/AdroitAnandAI/ML-Algorithms-in-MATLAB/blob/master/7.%20K%20Means%20and%20PCA/images/2.3.PNG">
 </p>
 
+# 8. Anomaly detection and Recommender systems #
+
+Lets implement the anomaly detection algorithm and apply it to detect failing servers on a network, followed by collaborative filtering to build a recommender system for movies.
+
+### Anomaly detection ###
+
+Lets implement an anomaly detection algorithm to detect anomalous behavior in server computers. The features measure the throughput (mb/s) and latency (ms) of response of each server. Gaussian model to detect anomalous examples is used here.
+
+```matlab
+%  Our example case consists of 2 network server statistics across
+%  several machines: the latency and throughput of each machine.
+%  This exercise will help us find possibly faulty (or very fast) machines.
+%
+
+fprintf('Visualizing example dataset for outlier detection.\n\n');
+
+%  Visualize the example dataset
+plot(X(:, 1), X(:, 2), 'bx');
+axis([0 30 0 30]);
+xlabel('Latency (ms)');
+ylabel('Throughput (mb/s)');
+```
+
+**visualizing the dataset**
+
+<p align="center">
+    <img src="https://github.com/AdroitAnandAI/ML-Algorithms-in-MATLAB/blob/master/8.%20Anomaly%20detection%20and%20Recommender%20systems/images/1.PNG">
+</p>
+
+### Gaussian distribution ###
+
+To perform anomaly detection, we will first need to fit a model to the data's distribution.
+
+<p>
+    <img src="https://github.com/AdroitAnandAI/ML-Algorithms-in-MATLAB/blob/master/8.%20Anomaly%20detection%20and%20Recommender%20systems/images/1.1.PNG">
+</p>
+
+### Estimating parameters for a Gaussian ###
+
+<p>
+    <img src="https://github.com/AdroitAnandAI/ML-Algorithms-in-MATLAB/blob/master/8.%20Anomaly%20detection%20and%20Recommender%20systems/images/1.2.PNG">
+</p>
+
+```matlab
+function [mu sigma2] = estimateGaussian(X)
+%ESTIMATEGAUSSIAN This function estimates the parameters of a 
+%Gaussian distribution using the data in X
+%   [mu sigma2] = estimateGaussian(X), 
+%   The input X is the dataset with each n-dimensional data point in one row
+%   The output is an n-dimensional vector mu, the mean of the data set
+%   and the variances sigma^2, an n x 1 vector
+% 
+
+% Useful variables
+[m, n] = size(X);
+
+% return these values correctly
+mu = zeros(n, 1);
+sigma2 = zeros(n, 1);
+
+mu = mean(X);
+
+sigma2 = sum((X - repmat(mu, m, 1)).^2)/m;
+
+end
+```
+
+**The Gaussian distribution contours of the distribution fit to the dataset**
+
+<p align="center">
+    <img src="https://github.com/AdroitAnandAI/ML-Algorithms-in-MATLAB/blob/master/8.%20Anomaly%20detection%20and%20Recommender%20systems/images/1.3.PNG">
+</p>
+
+### Selecting the threshold ###
+
+Now that we have estimated the Gaussian parameters, we can investigate which examples have a very high probability given this distribution and which examples have a very low probability. The low probability examples are more likely to be the anomalies in our dataset. One way to determine which examples are anomalies is to select a threshold based on a cross validation set.
+
+<p>
+    <img src="https://github.com/AdroitAnandAI/ML-Algorithms-in-MATLAB/blob/master/8.%20Anomaly%20detection%20and%20Recommender%20systems/images/1.3.1.PNG">
+</p>
+
+```matlab
+function [bestEpsilon bestF1] = selectThreshold(yval, pval)
+%SELECTTHRESHOLD Find the best threshold (epsilon) to use for selecting
+%outliers
+%   [bestEpsilon bestF1] = SELECTTHRESHOLD(yval, pval) finds the best
+%   threshold to use for selecting outliers based on the results from a
+%   validation set (pval) and the ground truth (yval).
+%
+
+bestEpsilon = 0;
+bestF1 = 0;
+F1 = 0;
+
+stepsize = (max(pval) - min(pval)) / 1000;
+for epsilon = min(pval):stepsize:max(pval)
+    
+    predictions = (pval < epsilon);
+
+    tp = sum(predictions.*yval);  % detects 1 1 (prediction, actual)
+    fp = sum(predictions > yval); % detects 1 0 (prediction, actual)
+    fn = sum(predictions < yval); % detects 0 1 (prediction, actual)
+    
+    prec = tp / (tp + fp);
+    rec = tp / (tp + fn);
+
+    F1 = 2 * prec * rec / (prec + rec);
+     
+    if F1 > bestF1
+       bestF1 = F1;
+       bestEpsilon = epsilon;
+    end
+end
+
+end
+```
+
+**The classified anomalies**
+
+<p align="center">
+    <img src="https://github.com/AdroitAnandAI/ML-Algorithms-in-MATLAB/blob/master/8.%20Anomaly%20detection%20and%20Recommender%20systems/images/1.3.2.PNG">
+</p>
+
+### Recommender Systems ###
+
+Lets compute the collaborative filtering objective function and gradient. And apply it to a dataset of movie ratings. This dataset
+consists of ratings on a scale of 1 to 5. The dataset has nu = 943 users, and nm = 1682 movies.
+
+<p>
+    <img src="https://github.com/AdroitAnandAI/ML-Algorithms-in-MATLAB/blob/master/8.%20Anomaly%20detection%20and%20Recommender%20systems/images/2.1.PNG">
+</p>
+
+### Collaborative filtering cost function ###
+
+<p>
+    <img src="https://github.com/AdroitAnandAI/ML-Algorithms-in-MATLAB/blob/master/8.%20Anomaly%20detection%20and%20Recommender%20systems/images/2.2.1.PNG">
+</p>
+
+### Collaborative filtering gradient ###
+
+<p>
+    <img src="https://github.com/AdroitAnandAI/ML-Algorithms-in-MATLAB/blob/master/8.%20Anomaly%20detection%20and%20Recommender%20systems/images/2.2.2.PNG">
+</p>
+
+### Regularized cost function ###
+
+<p>
+    <img src="https://github.com/AdroitAnandAI/ML-Algorithms-in-MATLAB/blob/master/8.%20Anomaly%20detection%20and%20Recommender%20systems/images/2.2.3.PNG">
+</p>
+
+### Regularized gradient ###
+
+<p>
+    <img src="https://github.com/AdroitAnandAI/ML-Algorithms-in-MATLAB/blob/master/8.%20Anomaly%20detection%20and%20Recommender%20systems/images/2.2.4.PNG">
+</p>
+
+
+```matlab
+function [J, grad] = cofiCostFunc(params, Y, R, num_users, num_movies, ...
+                                  num_features, lambda)
+%COFICOSTFUNC Collaborative filtering cost function
+%   [J, grad] = COFICOSTFUNC(params, Y, R, num_users, num_movies, ...
+%   num_features, lambda) returns the cost and gradient for the
+%   collaborative filtering problem.
+%
+
+% Unfold the U and W matrices from params
+X = reshape(params(1:num_movies*num_features), num_movies, num_features);
+Theta = reshape(params(num_movies*num_features+1:end), ...
+                num_users, num_features);
+
+            
+% You need to return the following values correctly
+J = 0;
+X_grad = zeros(size(X));
+Theta_grad = zeros(size(Theta));
+
+% Notes: X - num_movies  x num_features matrix of movie features
+%        Theta - num_users  x num_features matrix of user features
+%        Y - num_movies x num_users matrix of user ratings of movies
+%        R - num_movies x num_users matrix, where R(i, j) = 1 if the 
+%            i-th movie was rated by the j-th user
+%
+% set the following variables correctly:
+%
+%        X_grad - num_movies x num_features matrix, containing the 
+%                 partial derivatives w.r.t. to each element of X
+%        Theta_grad - num_users x num_features matrix, containing the 
+%                     partial derivatives w.r.t. to each element of Theta
+%
+
+
+J = sum(sum(R.*((X*Theta' - Y).^2)))/2 + ...
+       (sum(sum(Theta.^2)) + sum(sum(X.^2)))*lambda/2;
+
+X_grad = (R.*(X*Theta' - Y))*Theta + lambda.*X;
+
+Theta_grad = (R.*(X*Theta' - Y))'*X + lambda.*Theta;
+
+grad = [X_grad(:); Theta_grad(:)];
+
+end
+```
+
