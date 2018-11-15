@@ -1135,9 +1135,6 @@ while ~isempty(email_contents)
 
 end
 
-% Print footer
-fprintf('\n\n=========================\n');
-
 end
 ```
 
@@ -1162,15 +1159,6 @@ n = 1899;
 % You need to return the following variables correctly.
 x = zeros(n, 1);
 
-% ====================== YOUR CODE HERE ======================
-% Instructions: Fill in this function to return a feature vector for the
-%               given email (word_indices). To help make it easier to 
-%               process the emails, we have have already pre-processed each
-%               email and converted each word in the email into an index in
-%               a fixed dictionary (of 1899 words). The variable
-%               word_indices contains the list of indices of the words
-%               which occur in one email.
-% 
 %               Concretely, if an email has the text:
 %
 %                  The quick brown fox jumped over the lazy dog.
@@ -1207,4 +1195,220 @@ end
 
 end
 ```
+
+# 7. K Means and PCA #
+
+Lets implement the K-means clustering algorithm and apply it to compress an image followed by principal component analysis to find a low-dimensional representation of face images.
+
+### Finding closest centroids ###
+
+<p>
+    <img src="https://github.com/AdroitAnandAI/ML-Algorithms-in-MATLAB/blob/master/7.%20K%20Means%20and%20PCA/images/1.1.1.PNG">
+</p>
+
+```matlab
+function idx = findClosestCentroids(X, centroids)
+%FINDCLOSESTCENTROIDS computes the centroid memberships for every example
+%   idx = FINDCLOSESTCENTROIDS (X, centroids) returns the closest centroids
+%   in idx for a dataset X where each row is a single example. idx = m x 1 
+%   vector of centroid assignments (i.e. each entry in range [1..K])
+%
+
+% Set K
+K = size(centroids, 1);
+m = size(X,1);
+
+% You need to return the following variables correctly.
+idx = zeros(m, 1);
+
+for i = 1:m
+    dist = 100000000;
+    for j = 1:K
+        if (sum((X(i,:) - centroids(j,:)).^2) < dist)
+            dist = sum((X(i,:) - centroids(j,:)).^2);
+            idx(i) = j;
+        end
+    end
+end
+
+end
+```
+
+### Computing centroid means ###
+
+<p>
+    <img src="https://github.com/AdroitAnandAI/ML-Algorithms-in-MATLAB/blob/master/7.%20K%20Means%20and%20PCA/images/1.1.2.PNG">
+</p>
+
+```matlab
+function centroids = computeCentroids(X, idx, K)
+%COMPUTECENTROIDS returns the new centroids by computing the means of the 
+%data points assigned to each centroid.
+%   centroids = COMPUTECENTROIDS(X, idx, K) returns the new centroids by 
+%   computing the means of the data points assigned to each centroid. It is
+%   given a dataset X where each row is a single data point, a vector
+%   idx of centroid assignments (i.e. each entry in range [1..K]) for each
+%   example, and K, the number of centroids. You should return a matrix
+%   centroids, where each row of centroids is the mean of the data points
+%   assigned to it.
+%
+
+% Useful variables
+[m n] = size(X);
+
+% You need to return the following variables correctly.
+centroids = zeros(K, n);
+
+for i = 1:K
+    centroids (i,:) = mean(X(idx == i, :));
+end
+
+end
+```
+
+**K-means on example dataset**
+
+<p align="center">
+    <img src="https://github.com/AdroitAnandAI/ML-Algorithms-in-MATLAB/blob/master/7.%20K%20Means%20and%20PCA/images/1.2.PNG">
+</p>
+
+### Implementing PCA ###
+
+PCA consists of two computational steps: 
+**-compute the covariance matrix of the data 
+**-compute the eigenvectors U1; U2; ; ; ;Un. 
+
+These will correspond to the principal components of variation in the data.
+
+Before using PCA, it is important to rst normalize the data by subtracting the mean value of each feature from the dataset, and scaling each dimension so that they are in the same range.
+
+**To compute the covariance matrix of the data
+
+<p>
+    <img src="https://github.com/AdroitAnandAI/ML-Algorithms-in-MATLAB/blob/master/7.%20K%20Means%20and%20PCA/images/2.2.PNG">
+</p>
+
+```matlab
+function [U, S] = pca(X)
+%PCA Run principal component analysis on the dataset X
+%   [U, S, X] = pca(X) computes eigenvectors of the covariance matrix of X
+%   Returns the eigenvectors U, the eigenvalues (on diagonal) in S
+%
+
+% Useful values
+[m, n] = size(X);
+
+% You need to return the following variables correctly.
+U = zeros(n);
+S = zeros(n);
+
+sigma = X'*X/m;
+
+[U, S, V] = svd(sigma);
+
+end
+```
+
+**Computed eigenvectors of the dataset**
+
+<p align="center">
+    <img src="https://github.com/AdroitAnandAI/ML-Algorithms-in-MATLAB/blob/master/7.%20K%20Means%20and%20PCA/images/2.2.1.PNG">
+</p>
+
+### Dimensionality Reduction with PCA ###
+
+After computing the principal components, we can use them to reduce the feature dimension of your dataset by projecting each example onto a lower dimensional space, x(i) ! z(i) (e.g., projecting the data from 2D to 1D). Here, we will use the eigenvectors returned by PCA and project the example dataset into a 1-dimensional space.
+
+**Projecting the data onto the principal components**
+
+Specifically, we are given a dataset X, the principal components U, and the desired number of dimensions to reduce to K. You should project each example in X onto the top K components in U. Note that the top K components in U are given by the first K columns of U, that is U reduce = U(:, 1:K).
+
+```matlab
+function Z = projectData(X, U, K)
+%PROJECTDATA Computes the reduced data representation when projecting only 
+%on to the top k eigenvectors
+%   Z = projectData(X, U, K) computes the projection of 
+%   the normalized inputs X into the reduced dimensional space spanned by
+%   the first K columns of U. It returns the projected examples in Z.
+%
+
+% need to return the following variables correctly.
+Z = zeros(size(X, 1), K);
+
+m = size(X, 1);
+
+%     for i = 1:m
+%         x = X(i, :)';
+%         Z(i,:) = x' * U(:, K);
+%     end
+        
+
+Z = X*U(:, 1:K);
+
+end
+```
+
+**Reconstructing an approximation of the data**
+
+After projecting the data onto the lower dimensional space, we can approximately recover the data by projecting them back onto the original high dimensional space.
+
+```matlab
+function X_rec = recoverData(Z, U, K)
+%RECOVERDATA Recovers an approximation of the original data when using the 
+%projected data
+%   X_rec = RECOVERDATA(Z, U, K) recovers an approximation the 
+%   original data that has been reduced to K dimensions. It returns the
+%   approximate reconstruction in X_rec.
+%
+
+% need to return the following variables correctly.
+X_rec = zeros(size(Z, 1), size(U, 1));
+
+m = size(Z, 1);
+
+%               Notice that U(j, 1:K) is a row vector.
+%               
+
+%     for i = 1:m
+%         v = Z(i, :)';
+%         recovered_j = v' * U(:, 1:K)';
+%     end
+    
+    X_rec = Z * U(:, 1:K)';
+
+end
+```
+
+**Visualizing the projections**
+
+```matlab
+%  Visualization of Faces after PCA Dimension Reduction
+%  Project images to the eigen space using the top K eigen vectors and 
+%  visualize only using those K dimensions
+%  Compare to the original input, which is also displayed
+
+fprintf('\nVisualizing the projected (reduced dimension) faces.\n\n');
+
+K = 100;
+X_rec  = recoverData(Z, U, K);
+
+% Display normalized data
+subplot(1, 2, 1);
+displayData(X_norm(1:100,:));
+title('Original faces');
+axis square;
+
+% Display reconstructed data from only k eigenfaces
+subplot(1, 2, 2);
+displayData(X_rec(1:100,:));
+title('Recovered faces');
+axis square;
+
+```
+
+**The normalized and projected data after PCA.**
+
+<p align="center">
+    <img src="https://github.com/AdroitAnandAI/ML-Algorithms-in-MATLAB/blob/master/7.%20K%20Means%20and%20PCA/images/2.3.PNG">
+</p>
 
